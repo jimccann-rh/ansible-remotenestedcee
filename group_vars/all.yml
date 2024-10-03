@@ -10,9 +10,9 @@ vc_fact_datacenter1: "nested-ceedatacenter-1"
 vc_fact_datacenter2: "nested-ceedatacenter-2"
 vc_fact_cluster1: "nested-ceecluster-1"
 vc_fact_cluster2: "nested-ceecluster-2"
-vc_fact_deployment_network: "cee-922"
+vc_fact_deployment_network: "cee-vlan-1167"
 #vc_fact_deployment_network: "segment-884-ipv4-6-nested"
-vc_fact_deployment_network2: "cee-922"
+#vc_fact_deployment_network2: "cee-922"
 #vc_fact_deployment_network2: "segment-884-ipv4-6-nested"
 # below is for nested and is the real vCenter to deploy the nested vc to
 #vc_hostname: "{{ custom_hostname }}"
@@ -26,8 +26,8 @@ vc_username: "{{ lookup('ansible.builtin.env', 'VMWARE_USER') }}"
 vc_password: "{{ lookup('ansible.builtin.env', 'VMWARE_PASSWORD') }}"
 
 
-vc_datacenter: "ceedatacenter-1"
-vc_cluster: "ceecluster-1"
+vc_datacenter: "ceedatacenter"
+vc_cluster: "ceecluster"
 vc_folder: "nested-limited"
 
 
