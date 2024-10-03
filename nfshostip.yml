@@ -1,7 +1,7 @@
-nfserver: 10.185.92.22
+nfserver: 10.184.218.85
 nfsname: 'isos'
 sharepoint: "/data/export/share/"
-nfserver2: 10.185.151.99
+nfserver2: 10.184.64.133
 nfsname2: 'dsnested'
-sharepoint2: "/nfsmount/devqe"
+sharepoint2: "/nfsmount/cee"
 
