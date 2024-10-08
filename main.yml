@@ -1,18 +1,17 @@
 ---
 
 - hosts: remotecee
-  #connection: local
+  # connection: local
   become: false
   gather_facts: false
 
   tasks:
     - block:
-       - name: Add host to group esxi 
+       - name: Add host to group esxi
          ansible.builtin.add_host:
            name: '{{ item }}'
            groups: esxi
          loop: "{{ target_hosts.split('\n') | list }}"
-   
        - name: Add host to group vc
          ansible.builtin.add_host:
            name: '{{ item }}'
@@ -24,20 +23,18 @@
            name: '{{ item }}'
            groups: esxi
          loop: "{{ target_hosts | list }}"
-       
        - name: Add host to group vc
          ansible.builtin.add_host:
            name: '{{ item }}'
            groups: vc
          loop: "{{ target_vcs | list }}"
 
-
   tags:
     - always
 
 - name: create nested VM's
   hosts: remotecee
-  #connection: local
+  # connection: local
   gather_facts: true
   vars:
     templocation: "{{ ansible_env.HOME }}/build"
@@ -45,12 +42,8 @@
     version: "7"
     esximemory: "131072"
     esxicpu: "20"
-    testingesxi: false    
+    testingesxi: false
     testingvc: false
-#    howmanydays: 1
-#    tempenviro: true 
-#    createcron: false
-#    cleanupcron: false
 
   collections:
     - community.general
@@ -70,17 +63,14 @@
         cluster_name: "{{ vc_cluster }}"
       register: cluster_info
 
-#    - debug:
-#        msg: "{{ cluster_info['clusters'][vc_cluster]['resource_summary'] }}"
-
     - name: set static usage
-      set_fact: 
+      set_fact:
         cpuover: "{{ cluster_info['clusters'][vc_cluster]['resource_summary']['cpuCapacityMHz'] - 20000 }}"
         memover: "{{ cluster_info['clusters'][vc_cluster]['resource_summary']['memCapacityMB'] - 98304 }}"
         dskover: "{{ cluster_info['clusters'][vc_cluster]['resource_summary']['storageCapacityMB'] - 1000000 }}"
 
-    - debug:
-        msg: 
+    - ansible.builtin.debug:
+        msg:
           - "{{ cluster_info['clusters'][vc_cluster]['resource_summary'] }}"
           - "{{ cpuover }}"
           - "{{ memover }}"
@@ -172,7 +162,6 @@
 
        - name: Add dvs to vcenter and add host to dvs
          include_tasks: dvs_hosts_vcenter.yml
-         #when: '"1" in DC | string'
          loop: "{{ groups['esxi'] | list }}"
          loop_control:
            loop_var: loop_bms
@@ -183,7 +172,7 @@
 
 - name: REMOVE nested VM's
   hosts: remotecee
-  #connection: local
+  # connection: local
   gather_facts: true
   vars:
     removevsphere: false
@@ -191,7 +180,6 @@
     cleanupcron: false
     showinfo: true
     howmanydays: 1
-#    tempenviro: true 
 
   collections:
     - community.general
@@ -227,15 +215,14 @@
     - block:
        - name: Set cron
          include_tasks: cronjob.yml
-#      when: tempenviro | bool
+
     - block:
 
-       - debug:
-           msg: 
+       - ansible.builtin.debug:
+           msg:
              - "***** {{ host_fact_name }} VCENTER IP ADDRESS *****"
              - "Login account for vCenter ***** administrator@{{ vc_fact_domain }} *****"
              - "Password was set at the start of the Launch Template in AAP"
-           #msg: "***** {{ host_fact_name }} VCENTER IP ADDRESS ***** password is ***** {{ vc_fact_password }} *****"
          loop: "{{ groups['vc'] | list }}"
          loop_control:
            loop_var: loop_bms
