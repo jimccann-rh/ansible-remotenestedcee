@@ -1,17 +1,18 @@
 ---
 
-- name: how long to let environment run
-  set_fact:
+- name: How long to let environment run
+  ansible.builtin.set_fact:
     cron_time: "{{ lookup('pipe', 'date -d \"+{{ howmanydays }} days\" +\"%M %H %d %m %Y\"') }}"
     converth: "{{ target_hosts | replace('\n', ', ') }}"
     convertv: "{{ target_vcs | replace('\n', ', ') }}"
 
-- name: set cron job fact
-  set_fact:
+- name: Set cron job fact
+  ansible.builtin.set_fact:
     cron_job: source ~/nested.source && cd ~/ansible-remotenestedcee/ ; ansible-playbook --connection=local -i hosts main.yml --extra-var cleanupcron=true --extra-var version={{ '"' }}{{ version }}{{ '"' }} --extra-var='{"target_hosts"{{ ":" }} {{"["}}{{ converth }}{{"]"}} }' --extra-var='{"target_vcs"{{ ":"}} {{"["}}{{ convertv }}{{"]"}} }' --extra-var removevsphere=true -t removevsphere >> /tmp/{{ target_vcs | replace('\n', ',') | replace('[', '') | replace(']', '') |  regex_replace("'", '') }}.log 2>&1
 
 
-- debug:
+- name: Debug cron
+  ansible.builtin.debug:
     msg:
       - "{{ cron_time }}"
       - "minute: {{ cron_time.split()[0] }}"
@@ -23,7 +24,7 @@
       - "{{ convertv }}"
 
 - name: Create the cron job
-  cron:
+  ansible.builtin.cron:
     state: present
     name: "script_cron {{ target_vcs }}"
     user: "{{ ansible_user }}"
@@ -35,7 +36,7 @@
   when: createcron | bool
 
 - name: Remove the cron job
-  cron:
+  ansible.builtin.cron:
     state: absent
-    name: "script_cron {{ target_vcs[0]}}"
+    name: "script_cron {{ target_vcs[0] }}"
   when: cleanupcron | bool

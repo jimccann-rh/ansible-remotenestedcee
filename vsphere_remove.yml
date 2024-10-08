@@ -1,24 +1,20 @@
 ---
 
 - name: List hosts in ESXi
-  debug:
+  ansible.builtin.debug:
     msg: "Host: {{ item }}"
   loop: "{{ groups['esxi'] }}"
 
 - name: List hosts in VC
-  debug:
+  ansible.builtin.debug:
     msg: "Host: {{ item }}"
   loop: "{{ groups['vc'] }}"
 
-- name: Remove vSphere environment
-  block:
-
-    - name: "DELETE virtual machine {{ host_fact_name }} version {{ version }}"
-      community.vmware.vmware_guest:
-        datacenter: "{{ vc_datacenter }}"
-        folder: "{{ vc_datacenter }}/vm/{{ vc_folder }}"
-        name: "{{ host_fact_name }}"
-        state: absent
-        force: true
-
+- name: "DELETE virtual machine {{ host_fact_name }}"
+  community.vmware.vmware_guest:
+    datacenter: "{{ vc_datacenter }}"
+    folder: "{{ vc_datacenter }}/vm/{{ vc_folder }}"
+    name: "{{ host_fact_name }}"
+    state: absent
+    force: true
   when: removevsphere | bool

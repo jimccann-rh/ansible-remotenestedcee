@@ -1,16 +1,17 @@
 ---
 
 - name: List hosts in ESXi
-  debug:
+  ansible.builtin.debug:
     msg: "Host: {{ item }}"
   loop: "{{ groups['esxi'] }}"
 
 - name: List hosts in VC
-  debug:
+  ansible.builtin.debug:
     msg: "Host: {{ item }}"
   loop: "{{ groups['vc'] }}"
 
-- block:
+- name: Set up vsphere
+  block:
     - name: Create Datacenter
       community.vmware.vmware_datacenter:
         datacenter_name: '{{ item }}'
@@ -24,8 +25,8 @@
         datacenter_name: '{{ item.datacenter }}'
         cluster_name: '{{ item.cluster }}'
       loop:
-        - { 'cluster': '{{ vc_fact_cluster1 }}', 'datacenter': '{{ vc_fact_datacenter1  }}' }
-#        - { 'cluster': '{{ vc_fact_cluster2 }}', 'datacenter': '{{ vc_fact_datacenter2  }}' }
+        - { 'cluster': '{{ vc_fact_cluster1 }}', 'datacenter': '{{ vc_fact_datacenter1 }}' }
+#        - { 'cluster': '{{ vc_fact_cluster2 }}', 'datacenter': '{{ vc_fact_datacenter2 }}' }
 
     - name: Enable DRS and set default VM behavior to fully automated
       community.vmware.vmware_cluster_drs:
@@ -34,7 +35,8 @@
         enable: true
         drs_default_vm_behavior: fullyAutomated
 
-    - set_fact:
+    - name: Set advs
+      ansible.builtin.set_fact:
         advs: { "das.ignoreInsufficientHbDatastore": "True", "das.ignoreRedundantNetWarning": "True" }
 
     - name: Enable HA without admission control
@@ -52,7 +54,8 @@
       password: "{{ vc_fact_password }}"
       validate_certs: false
 
-- block:
+- name: Set up vsphere
+  block:
 
     - name: "Add ESXi Host {{ hostvars[groups['esxi'][my_idx]].NESTEDVMIP }} to vCenter {{ hostvars[groups['vc'][0]].NESTEDVMIP }}"
       community.vmware.vmware_host:
@@ -88,20 +91,22 @@
       community.vmware.vmware_host_disk_info:
       register: host_vmhbas
 
-    - set_fact:
+    - name: Set esxip
+      ansible.builtin.set_fact:
         esxip: "{{ hostvars[groups['esxi'][my_idx]].NESTEDVMIP }}"
 
-    - set_fact:
+    - name: Set vmhbainfo
+      ansible.builtin.set_fact:
         vmhbainfo: "{{ host_vmhbas['hosts_disk_info'][esxip] }}"
 
     - name: Set disk by device_ctd
-      set_fact:
+      ansible.builtin.set_fact:
         vmfs_dn: "{{ item.canonical_name }}"
       loop: "{{ vmhbainfo }}"
       when: item.device_ctd_list[0] == "vmhba0:C0:T2:L0"
 
     - name: Create datastore
-      vmware_host_datastore:
+      community.vmware.vmware_host_datastore:
         validate_certs: false
         datastore_name: "Datastore-{{ hostvars[groups['esxi'][my_idx]].NESTEDVMIP }}"
         vmfs_device_name: "{{ vmfs_dn }}"
